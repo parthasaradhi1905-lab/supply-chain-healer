@@ -1,0 +1,428 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --bg-main: #FBFBFE;
+    --bg-card: #FFFFFF;
+    --glass-bg: rgba(255, 255, 255, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.4);
+    --accent-blue: #2563EB;
+    --accent-indigo: #4F46E5;
+    --text-primary: #0F172A;
+    --text-secondary: #475569;
+    --text-muted: #94A3B8;
+    --border-light: #F1F5F9;
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -2px rgb(0 0 0 / 0.1);
+  }
+
+  body {
+    @apply antialiased selection:bg-blue-100 selection:text-blue-900;
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+    font-family: 'Inter', sans-serif;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: 'Outfit', sans-serif;
+    @apply font-semibold tracking-tight;
+  }
+}
+
+@layer components {
+
+  /* Premium Glassmorphism */
+  .glass-effect {
+    @apply backdrop-blur-xl border border-white/40;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0.4) 100%);
+  }
+
+  .sidebar-glass {
+    @apply backdrop-blur-2xl border-r border-white/20;
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.4));
+  }
+
+  /* Modern Cards */
+  .premium-card {
+    @apply bg-white rounded-2xl border border-slate-100 transition-all duration-300;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
+  }
+
+  .premium-card:hover {
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+    transform: translateY(-1px);
+  }
+
+  /* Premium Buttons */
+  .btn-premium {
+    @apply px-5 py-2.5 bg-slate-900 text-white rounded-xl font-medium transition-all duration-200 active:scale-95 flex items-center gap-2;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
+  }
+
+  .btn-premium:hover {
+    @apply bg-slate-800 -translate-y-0.5 shadow-lg shadow-slate-900/10;
+  }
+
+  .btn-ghost {
+    @apply px-4 py-2 text-slate-600 rounded-xl transition-all duration-200 hover:bg-slate-50 flex items-center gap-2;
+  }
+
+  /* Status Badges - Refined */
+  .status-pill {
+    @apply px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5;
+  }
+
+  .status-pill-success {
+    @apply bg-emerald-50 text-emerald-600 border border-emerald-100;
+  }
+
+  .status-pill-warning {
+    @apply bg-amber-50 text-amber-600 border border-amber-100;
+  }
+
+  .status-pill-danger {
+    @apply bg-rose-50 text-rose-600 border border-rose-100;
+  }
+
+  .status-pill-blue {
+    @apply bg-blue-50 text-blue-600 border border-blue-100;
+  }
+
+  /* Input Refinement */
+  .modern-input {
+    @apply w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all duration-200;
+  }
+
+  /* Floating elements */
+  .floating-element {
+    animation: floating 3s ease-in-out infinite;
+  }
+
+  @keyframes floating {
+    0% {
+      transform: translateY(0px);
+    }
+
+    50% {
+      transform: translateY(-5px);
+    }
+
+    100% {
+      transform: translateY(0px);
+    }
+  }
+}
+
+@layer utilities {
+  .text-subtle {
+    color: var(--text-secondary);
+  }
+
+  .text-muted-xs {
+    color: var(--text-muted);
+    font-size: 0.75rem;
+  }
+
+  .bg-gradient-premium {
+    background: radial-gradient(at top left, #F8FAFC 0%, #EFF6FF 100%);
+  }
+
+  .card-gradient {
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-200 rounded-full border-4 border-transparent bg-clip-padding;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-slate-300;
+}
+
+/* ════════════════════════════════════════════════════
+   DARK MODE - Applied when html.dark-mode
+   ════════════════════════════════════════════════════ */
+.dark-mode {
+  --bg-main: #0B1120;
+  --bg-card: #111827;
+  --glass-bg: rgba(17, 24, 39, 0.8);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --text-primary: #F1F5F9;
+  --text-secondary: #94A3B8;
+  --text-muted: #64748B;
+  --border-light: #1E293B;
+  color-scheme: dark;
+}
+
+.dark-mode body {
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+}
+
+/* Backgrounds */
+.dark-mode .bg-white {
+  background-color: #111827 !important;
+}
+
+.dark-mode .bg-slate-50 {
+  background-color: #0F172A !important;
+}
+
+.dark-mode .bg-slate-100 {
+  background-color: #1E293B !important;
+}
+
+.dark-mode .bg-gray-50 {
+  background-color: #0F172A !important;
+}
+
+.dark-mode .bg-sky-100 {
+  background-color: #0B1120 !important;
+}
+
+/* Text */
+.dark-mode .text-slate-900 {
+  color: #F1F5F9 !important;
+}
+
+.dark-mode .text-slate-800 {
+  color: #E2E8F0 !important;
+}
+
+.dark-mode .text-slate-700 {
+  color: #CBD5E1 !important;
+}
+
+.dark-mode .text-slate-600 {
+  color: #94A3B8 !important;
+}
+
+.dark-mode .text-slate-500 {
+  color: #64748B !important;
+}
+
+.dark-mode .text-slate-400 {
+  color: #475569 !important;
+}
+
+/* Borders */
+.dark-mode .border-slate-100 {
+  border-color: #1E293B !important;
+}
+
+.dark-mode .border-slate-200 {
+  border-color: #334155 !important;
+}
+
+.dark-mode .border-slate-300 {
+  border-color: #475569 !important;
+}
+
+.dark-mode .border-white {
+  border-color: #1E293B !important;
+}
+
+.dark-mode .divide-slate-50> :not([hidden])~ :not([hidden]) {
+  border-color: #1E293B !important;
+}
+
+.dark-mode .border-b.border-slate-50 {
+  border-color: #1E293B !important;
+}
+
+/* Cards & Panels */
+.dark-mode .premium-card {
+  background-color: #111827 !important;
+  border-color: #1E293B !important;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3) !important;
+}
+
+.dark-mode .premium-card:hover {
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* Sidebar */
+.dark-mode .sidebar-glass {
+  background: linear-gradient(to bottom, rgba(17, 24, 39, 0.95), rgba(15, 23, 42, 0.9)) !important;
+  border-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+/* Inputs */
+.dark-mode input,
+.dark-mode select,
+.dark-mode textarea {
+  background-color: #1E293B !important;
+  border-color: #334155 !important;
+  color: #E2E8F0 !important;
+}
+
+.dark-mode input::placeholder {
+  color: #475569 !important;
+}
+
+.dark-mode input:focus,
+.dark-mode select:focus {
+  border-color: #3B82F6 !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15) !important;
+}
+
+/* Hover states */
+.dark-mode .hover\:bg-slate-100:hover {
+  background-color: #1E293B !important;
+}
+
+.dark-mode .hover\:bg-slate-50:hover {
+  background-color: #1E293B !important;
+}
+
+.dark-mode .hover\:bg-blue-50\/30:hover {
+  background-color: rgba(30, 58, 138, 0.15) !important;
+}
+
+/* Status pills */
+.dark-mode .bg-emerald-50 {
+  background-color: rgba(5, 150, 105, 0.15) !important;
+}
+
+.dark-mode .bg-blue-50 {
+  background-color: rgba(37, 99, 235, 0.15) !important;
+}
+
+.dark-mode .bg-rose-50 {
+  background-color: rgba(225, 29, 72, 0.15) !important;
+}
+
+.dark-mode .bg-amber-50 {
+  background-color: rgba(217, 119, 6, 0.15) !important;
+}
+
+.dark-mode .bg-indigo-50 {
+  background-color: rgba(79, 70, 229, 0.15) !important;
+}
+
+/* Shadows */
+.dark-mode .shadow-sm {
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+}
+
+.dark-mode .shadow-xl {
+  box-shadow: 0 20px 25px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Charts */
+.dark-mode .recharts-cartesian-grid line {
+  stroke: #1E293B !important;
+}
+
+.dark-mode .recharts-text {
+  fill: #64748B !important;
+}
+
+/* Scrollbar */
+.dark-mode ::-webkit-scrollbar-thumb {
+  background-color: #334155 !important;
+}
+
+.dark-mode ::-webkit-scrollbar-thumb:hover {
+  background-color: #475569 !important;
+}
+
+/* ════════════════════════════════════════════════════
+   COMPACT VIEW - Applied when html.compact-view
+   ════════════════════════════════════════════════════ */
+.compact-view .p-6 {
+  padding: 1rem !important;
+}
+
+.compact-view .p-8 {
+  padding: 1.25rem !important;
+}
+
+.compact-view .px-6 {
+  padding-left: 1rem !important;
+  padding-right: 1rem !important;
+}
+
+.compact-view .px-8 {
+  padding-left: 1.25rem !important;
+  padding-right: 1.25rem !important;
+}
+
+.compact-view .py-4 {
+  padding-top: 0.5rem !important;
+  padding-bottom: 0.5rem !important;
+}
+
+.compact-view .py-5 {
+  padding-top: 0.75rem !important;
+  padding-bottom: 0.75rem !important;
+}
+
+.compact-view .gap-6 {
+  gap: 0.75rem !important;
+}
+
+.compact-view .gap-8 {
+  gap: 1rem !important;
+}
+
+.compact-view .mb-8 {
+  margin-bottom: 1rem !important;
+}
+
+.compact-view .mb-6 {
+  margin-bottom: 0.75rem !important;
+}
+
+.compact-view .space-y-6> :not([hidden])~ :not([hidden]) {
+  margin-top: 0.75rem !important;
+}
+
+.compact-view .text-3xl {
+  font-size: 1.5rem !important;
+}
+
+.compact-view .text-2xl {
+  font-size: 1.25rem !important;
+}
+
+.compact-view .rounded-3xl {
+  border-radius: 1rem !important;
+}
+
+.compact-view .rounded-2xl {
+  border-radius: 0.75rem !important;
+}
+
+/* ════════════════════════════════════════════════════
+   NO ANIMATIONS - Applied when html.no-animations
+   ════════════════════════════════════════════════════ */
+.no-animations *,
+.no-animations *::before,
+.no-animations *::after {
+  animation-duration: 0s !important;
+  animation-delay: 0s !important;
+  transition-duration: 0s !important;
+  transition-delay: 0s !important;
+}

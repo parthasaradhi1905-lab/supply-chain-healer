@@ -1,0 +1,35 @@
+{
+    "name": "aegis-nexus",
+    "version": "1.0.0",
+    "description": "AI-Powered Supply Chain Control Tower with Self-Healing Capabilities",
+    "type": "module",
+    "scripts": {
+        "dev": "concurrently --kill-others \"npm run server\" \"npm run client\"",
+        "server": "node server/index.js",
+        "client": "cd client && npx vite --port 5173",
+        "db:init": "node server/db/init.js",
+        "db:seed": "node server/db/seed.js",
+        "db:reset": "rm -f aegis.db && npm run db:init && npm run db:seed",
+        "test:db": "node server/tests/db.test.js"
+    },
+    "keywords": [
+        "supply-chain",
+        "ai",
+        "control-tower"
+    ],
+    "author": "",
+    "license": "MIT",
+    "dependencies": {
+        "bcrypt": "^5.1.1",
+        "cors": "^2.8.5",
+        "dotenv": "^16.3.1",
+        "express": "^4.18.2",
+        "jsonwebtoken": "^9.0.2",
+        "openai": "^4.20.0",
+        "sqlite3": "^5.1.7"
+    },
+    "devDependencies": {
+        "concurrently": "^9.2.1",
+        "nodemon": "^3.0.2"
+    }
+}
