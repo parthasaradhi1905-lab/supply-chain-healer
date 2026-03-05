@@ -1,8 +1,27 @@
 node_modules/
 *.db
 *.db-journal
+*.db-shm
+*.db-wal
 .env
 .DS_Store
 dist/
 build/
 *.log
+
+# Python
+venv/
+ml-service/venv/
+__pycache__/
+*.pyc
+*.pyo
+.env
+
+# ML models
+*.pt
+*.pth
+*.onnx
+*.bin
+
+# OS
+Thumbs.db
