@@ -20,6 +20,7 @@ import ArbitrageGridPage from './pages/ArbitrageGridPage';
 import EnergyMapPage from './pages/EnergyMapPage';
 import NotificationsPage from './pages/NotificationsPage';
 import UserManagementPage from './pages/UserManagementPage';
+import DigitalTwinPage from './pages/DigitalTwinPage';
 import CommandPalette from './components/common/CommandPalette';
 
 // Protected Route wrapper
@@ -157,6 +158,7 @@ function AppRoutes() {
                 <Route path="/country-data" element={<ProtectedRoute allowedRoles={['buyer', 'admin']}><CountryDataPage /></ProtectedRoute>} />
                 <Route path="/arbitrage-grid" element={<ProtectedRoute allowedRoles={['buyer', 'admin']}><ArbitrageGridPage /></ProtectedRoute>} />
                 <Route path="/notifications" element={<ProtectedRoute allowedRoles={['buyer', 'admin']}><NotificationsPage /></ProtectedRoute>} />
+                <Route path="/digital-twin" element={<ProtectedRoute allowedRoles={['buyer', 'admin']}><DigitalTwinPage /></ProtectedRoute>} />
 
                 {/* 404 Catch-all */}
                 <Route path="*" element={<Navigate to="/" replace />} />

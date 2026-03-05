@@ -49,4 +49,49 @@ app.listen(PORT, () => {
     console.log(`   📍 Local: http://localhost:${PORT}`);
     console.log(`   💚 Health: http://localhost:${PORT}/health`);
     console.log('   ================================\n');
+
+    // Start disruption pipeline cron
+    import('./disruptionPipeline/cron.js')
+        .then(({ startCron }) => {
+            startCron();
+            console.log('   📡 Disruption pipeline scheduler started');
+        })
+        .catch(err => {
+            console.log('   ⚠️  Pipeline scheduler skipped:', err.message);
+        });
+
+    // Initialize MemoryBus (Redis optional)
+    import('./swarm/MemoryBus.js')
+        .then(({ initRedis }) => {
+            initRedis().then(() => {
+                console.log('   🧠 MemoryBus initialized');
+
+                // Start Sentinel Node
+                import('./ai/agents/SentinelAgent.js').then(({ default: sentinel }) => {
+                    sentinel.startListening();
+                });
+
+                // Start Neo4j Context & Twin Updater
+                import('./digitalTwin/Neo4jClient.js').then(({ initDb }) => {
+                    initDb().then(() => {
+                        import('./digitalTwin/seedNeo4j.js').then(({ seedGraph }) => {
+                            seedGraph().then(() => {
+                                import('./digitalTwin/twin_updater.js').then(({ default: twinUpdater }) => {
+                                    twinUpdater.start();
+                                });
+                                // Start Risk Listener
+                                import('./swarm/RiskListener.js').then(({ default: riskListener }) => {
+                                    riskListener.start();
+                                });
+                            });
+                        });
+                    });
+                }).catch(err => {
+                    console.error('   ⚠️ Neo4j init skipped:', err.message);
+                });
+            });
+        })
+        .catch(err => {
+            console.log('   ⚠️  MemoryBus init skipped:', err.message);
+        });
 });

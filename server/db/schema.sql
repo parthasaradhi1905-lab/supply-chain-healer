@@ -185,6 +185,32 @@ CREATE TABLE IF NOT EXISTS invoices (
     FOREIGN KEY (buyer_id) REFERENCES users(id)
 );
 
+-- Agent Decisions table (Swarm AI explainability)
+CREATE TABLE IF NOT EXISTS agent_decisions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    session_id TEXT,
+    agent_name TEXT NOT NULL,
+    task TEXT NOT NULL,
+    input_json TEXT,
+    output_json TEXT,
+    confidence REAL DEFAULT 0.8,
+    duration_ms INTEGER,
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Experiment Results table (Benchmark comparisons)
+CREATE TABLE IF NOT EXISTS experiment_results (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    experiment_id TEXT NOT NULL,
+    method TEXT NOT NULL,
+    n_disruptions INTEGER NOT NULL,
+    avg_recovery_time REAL,
+    avg_cost REAL,
+    avg_service_level REAL,
+    resilience_score REAL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Indexes for performance
 CREATE INDEX IF NOT EXISTS idx_suppliers_type ON suppliers(type);
 CREATE INDEX IF NOT EXISTS idx_suppliers_capacity ON suppliers(stock_capacity);

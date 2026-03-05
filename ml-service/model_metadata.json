@@ -1,0 +1,20 @@
+{
+  "model_type": "GNN (GCNConv)",
+  "features": [
+    "supplier_reliability",
+    "weather_risk",
+    "port_congestion",
+    "distance",
+    "inventory_level",
+    "geopolitical_risk",
+    "n_suppliers",
+    "n_routes",
+    "avg_path_length",
+    "clustering_coeff",
+    "graph_density"
+  ],
+  "accuracy": 0.7423076923076923,
+  "n_samples": 5200,
+  "n_features": 11,
+  "has_graph_features": true
+}
