@@ -6,3 +6,8 @@ uvicorn>=0.23.0
 numpy>=1.24.0
 torch>=2.0.0
 torch-geometric>=2.4.0
+ray[rllib]
+gym
+simpy
+neo4j
+redis

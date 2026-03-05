@@ -136,7 +136,7 @@ def main():
     print(df.describe().round(3).to_string())
 
     # Save
-    data_dir = os.path.join(os.path.dirname(__file__), "data")
+    data_dir = os.path.join(os.path.dirname(__file__), "datasets")
     os.makedirs(data_dir, exist_ok=True)
 
     csv_path = os.path.join(data_dir, "supply_chain_dataset.csv")

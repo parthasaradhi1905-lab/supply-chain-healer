@@ -50,7 +50,7 @@ except ImportError:
 model_type = None
 model = None
 metadata = {}
-meta_path = os.path.join(DIR, "model_metadata.json")
+meta_path = os.path.join(DIR, "models", "metadata", "model_metadata.json")
 
 if os.path.exists(meta_path):
     with open(meta_path, "r") as f:
@@ -64,12 +64,12 @@ try:
     if "GNN" in model_type and HAS_TORCH:
         features = metadata.get("features", [])
         model = SupplyChainGNN(in_features=len(features), hidden_dim=64)
-        model.load_state_dict(torch.load(os.path.join(DIR, "gnn_model.pt"), weights_only=True))
+        model.load_state_dict(torch.load(os.path.join(DIR, "models", "gnn", "gnn_model.pt"), weights_only=True))
         model.eval()
         print(f"✅ GNN Model loaded successfully")
         
     elif "MLP" in model_type and HAS_TORCH:
-        checkpoint = torch.load(os.path.join(DIR, "gnn_model.pt"), weights_only=True)
+        checkpoint = torch.load(os.path.join(DIR, "models", "gnn", "gnn_model.pt"), weights_only=True)
         features = checkpoint.get("features", metadata.get("features", []))
         model = SupplyChainMLP(in_features=len(features), hidden_dim=128)
         model.load_state_dict(checkpoint["model_state"])
@@ -80,7 +80,7 @@ try:
         
     elif "XGB" in model_type and HAS_XGB:
         model = xgb.XGBClassifier()
-        model.load_model(os.path.join(DIR, "disruption_model.json"))
+        model.load_model(os.path.join(DIR, "models", "disruption", "disruption_model.json"))
         print(f"✅ XGBoost Model loaded successfully")
     else:
         print(f"⚠️  Dependencies missing for model type {model_type} or file not found.")

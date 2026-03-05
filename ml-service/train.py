@@ -27,7 +27,7 @@ def main():
     print("=" * 60)
 
     # Load dataset
-    data_path = os.path.join(os.path.dirname(__file__), "data", "supply_chain_dataset.csv")
+    data_path = os.path.join(os.path.dirname(__file__), "datasets", "supply_chain_dataset.csv")
     data = pd.read_csv(data_path)
 
     print(f"\n📊 Dataset: {len(data)} samples")
@@ -89,7 +89,7 @@ def main():
         print(f"   {feat:25s} {imp:.4f} {bar}")
 
     # Save model
-    model_path = os.path.join(os.path.dirname(__file__), "disruption_model.json")
+    model_path = os.path.join(os.path.dirname(__file__), "models", "disruption", "disruption_model.json")
     model.save_model(model_path)
     print(f"\n💾 Model saved to: {model_path}")
 
@@ -107,7 +107,7 @@ def main():
         "feature_importance": {f: float(i) for f, i in zip(features, importance)},
     }
 
-    meta_path = os.path.join(os.path.dirname(__file__), "model_metadata.json")
+    meta_path = os.path.join(os.path.dirname(__file__), "models", "metadata", "model_metadata.json")
     with open(meta_path, "w") as f:
         json.dump(metadata, f, indent=2)
     print(f"📝 Metadata saved to: {meta_path}")

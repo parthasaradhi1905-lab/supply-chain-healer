@@ -1,9 +1,26 @@
 import { useState, useEffect } from 'react';
-import Navbar from '../components/Navbar';
-import AgentTerminal from '../components/AgentTerminal';
-import CrisisModal from '../components/CrisisModal';
-import { Ship, AlertTriangle, Zap, Package, Play, RotateCcw } from 'lucide-react';
+import ControlTowerLayout from '../components/layout/ControlTowerLayout';
+import SupplyChainGlobe from '../components/SupplyChainGlobe';
+import CrisisControlPanel from '../components/CrisisControlPanel';
+import GlobalRiskRadar from '../components/GlobalRiskRadar';
+import RiskDashboard from '../components/RiskDashboard';
+import { Ship, AlertTriangle, Zap, Package, Play, RotateCcw, Activity } from 'lucide-react';
 import api from '../utils/api';
+
+// ─── Card primitives (Copied from Buyer Dashboard for consistency) ───
+function Card({ children, className = "" }) {
+    return <div className={`premium-card overflow-hidden bg-white border border-slate-100 rounded-2xl shadow-sm ${className}`}>{children}</div>;
+}
+function CardHeader({ children, className = "" }) {
+    return (
+        <div className={`px-6 py-5 border-b border-slate-50 flex items-center justify-between ${className}`}>
+            {children}
+        </div>
+    );
+}
+function CardBody({ children, className = "" }) {
+    return <div className={`p-6 ${className}`}>{children}</div>;
+}
 
 export default function AdminDashboard() {
     const [orders, setOrders] = useState([]);
@@ -13,9 +30,52 @@ export default function AdminDashboard() {
     const [isProcessing, setIsProcessing] = useState(false);
     const [currentCrisis, setCurrentCrisis] = useState(null);
     const [showCrisisModal, setShowCrisisModal] = useState(false);
+    const [shipments, setShipments] = useState([
+        {
+            id: 'SZX-219',
+            route: 'Shanghai Port → Singapore Hub',
+            transport_mode: 'Ocean Freight',
+            status: 'in_transit',
+            eta: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString()
+        },
+        {
+            id: 'SZX-220',
+            route: 'Singapore Hub → Detroit Factory',
+            transport_mode: 'Air Freight',
+            status: 'pending',
+            eta: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString()
+        }
+    ]);
+    const [disruptions, setDisruptions] = useState([]);
+    const [radarData, setRadarData] = useState([]);
+    const [storms, setStorms] = useState([]);
 
     useEffect(() => {
         loadOrders();
+
+        // Connect to WebSocket to consume Logistics Engine & Disaster Engine streams
+        const ws = new WebSocket("ws://localhost:8080");
+        ws.onmessage = (event) => {
+            try {
+                const parsed = JSON.parse(event.data);
+                if (parsed.type === "stream:shipments") {
+                    setShipments(parsed.payload);
+                } else if (parsed.type === "stream:disruptions") {
+                    setDisruptions(prev => [...prev, parsed.payload]);
+                    setAgentLogs(logs => [
+                        ...logs,
+                        `[SENTINEL] Disruption Event Detected: ${parsed.payload.type} at ${parsed.payload.location}`
+                    ]);
+                } else if (parsed.type === "stream:risk_radar") {
+                    setRadarData(parsed.payload.ranked || []);
+                } else if (parsed.type === "stream:storms") {
+                    setStorms(parsed.payload || []);
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        };
+        return () => ws.close();
     }, []);
 
     const loadOrders = async () => {
@@ -54,9 +114,15 @@ export default function AdminDashboard() {
 
         setIsProcessing(true);
         setAgentLogs([]);
-        setIsTerminalOpen(true);
+        // Remove terminal opening for layout consistency - ControlTowerLayout handles this natively
+        // setIsTerminalOpen(true);
 
         try {
+            // Update shipment visually
+            setShipments(prev => prev.map(s =>
+                s.id === 'SZX-219' ? { ...s, status: 'delayed', route: 'Shanghai Port ⚠️ → Singapore Hub' } : s
+            ));
+
             // Call AI endpoint
             const response = await api.post('/ai/trigger-crisis', {
                 disruptionType,
@@ -156,154 +222,158 @@ export default function AdminDashboard() {
         setIsTerminalOpen(false);
         setShowCrisisModal(false);
         setCurrentCrisis(null);
+        setShipments([
+            {
+                id: 'SZX-219',
+                route: 'Shanghai Port → Singapore Hub',
+                transport_mode: 'Ocean Freight',
+                status: 'in_transit',
+                eta: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString()
+            },
+            {
+                id: 'SZX-220',
+                route: 'Singapore Hub → Detroit Factory',
+                transport_mode: 'Air Freight',
+                status: 'pending',
+                eta: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString()
+            }
+        ]);
         loadOrders();
     };
 
+    const handleSpeedChange = async (e) => {
+        const speed = e.target.value;
+        try {
+            await api.post('/simulator/speed', { speed });
+            console.log(`Speed set to ${speed}x`);
+
+            // Log to terminal for immersion
+            setAgentLogs(logs => [
+                ...logs,
+                `[SYSTEM] Time dilation set to ${speed}x`
+            ]);
+        } catch (error) {
+            console.error('Failed to set speed:', error);
+        }
+    };
+
     return (
-        <div className="min-h-screen bg-bg-primary p-6">
-            <div className="max-w-7xl mx-auto">
-                <Navbar />
-
-                {/* Admin Header */}
-                <div className="glass-card-light p-6 mb-6">
-                    <h1 className="text-3xl font-heading mb-2 bg-gradient-to-r from-accent-primary to-accent-success bg-clip-text text-transparent">
-                        🎮 ADMIN SIMULATION CONTROL
-                    </h1>
-                    <p className="text-text-secondary">
-                        Trigger disruptions and watch the AI agents autonomously resolve supply chain crises
-                    </p>
-                </div>
-
-                {/* Main Grid */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-                    {/* Order Selection */}
-                    <div className="glass-card-light p-6">
-                        <h3 className="text-lg font-semibold text-text-primary mb-4 flex items-center gap-2">
-                            <Package className="w-5 h-5 text-accent-primary" />
-                            Select Target Order
-                        </h3>
-
-                        <div className="space-y-3">
-                            {orders.map((order) => (
-                                <button
-                                    key={order.id}
-                                    onClick={() => setSelectedOrderId(order.id)}
-                                    className={`w-full text-left p-4 rounded-lg border transition-all ${selectedOrderId === order.id
-                                        ? 'border-accent-primary bg-accent-primary/10'
-                                        : 'border-accent-primary/20 hover:border-accent-primary/40'
-                                        }`}
-                                >
-                                    <div className="font-semibold text-text-primary mb-1">
-                                        Order #{order.id.toString().padStart(4, '0')}
-                                    </div>
-                                    <div className="text-sm text-text-secondary">
-                                        {order.product_name}
-                                    </div>
-                                    <div className="text-xs text-text-muted mt-1">
-                                        Quantity: {order.quantity.toLocaleString()} units
-                                    </div>
-                                </button>
-                            ))}
+        <ControlTowerLayout>
+            {({ addTerminalLog, setShowTerminal }) => (
+                <div className="min-h-screen font-sans text-slate-900 bg-slate-50/50 -m-8 p-8">
+                    {/* Admin Header */}
+                    <div className="flex justify-between items-end mb-10">
+                        <div>
+                            <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight leading-none">
+                                Admin Control Tower
+                            </h1>
+                            <p className="text-slate-500 font-medium mt-3 flex items-center gap-2">
+                                <Activity className="w-4 h-4 text-blue-500" />
+                                Trigger disruptions and watch the <span className="text-slate-900 font-bold">AI agents</span> autonomously resolve supply chain crises
+                            </p>
                         </div>
                     </div>
 
-                    {/* Disruption Triggers */}
-                    <div className="glass-card-light p-6 lg:col-span-2">
-                        <h3 className="text-lg font-semibold text-text-primary mb-4 flex items-center gap-2">
-                            <AlertTriangle className="w-5 h-5 text-accent-danger" />
-                            Trigger Disruption Scenario
-                        </h3>
-
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            {/* Suez Blockage */}
-                            <button
-                                onClick={() => triggerCrisis('suez_blockage')}
-                                disabled={isProcessing || !selectedOrderId}
-                                className="btn-danger flex flex-col items-center gap-3 py-6 disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                <Ship className="w-12 h-12" />
-                                <div className="text-center">
-                                    <div className="font-bold text-lg">⚓ Suez Canal</div>
-                                    <div className="text-xs opacity-80 mt-1">Blockage</div>
-                                </div>
-                            </button>
-
-                            {/* Hurricane */}
-                            <button
-                                onClick={() => triggerCrisis('hurricane')}
-                                disabled={isProcessing || !selectedOrderId}
-                                className="btn-danger flex flex-col items-center gap-3 py-6 disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                <AlertTriangle className="w-12 h-12" />
-                                <div className="text-center">
-                                    <div className="font-bold text-lg">🌀 Hurricane</div>
-                                    <div className="text-xs opacity-80 mt-1">Pacific NW</div>
-                                </div>
-                            </button>
-
-                            {/* Labor Strike */}
-                            <button
-                                onClick={() => triggerCrisis('labor_strike')}
-                                disabled={isProcessing || !selectedOrderId}
-                                className="btn-danger flex flex-col items-center gap-3 py-6 disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                <Zap className="w-12 h-12" />
-                                <div className="text-center">
-                                    <div className="font-bold text-lg">📦 Labor Strike</div>
-                                    <div className="text-xs opacity-80 mt-1">LA Ports</div>
-                                </div>
-                            </button>
-                        </div>
+                    {/* Live Risk Dashboard */}
+                    <div className="mb-8">
+                        <RiskDashboard />
                     </div>
-                </div>
 
-                {/* Status Panel */}
-                <div className="glass-card-light p-6 mb-24">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                            <div className="flex items-center gap-2">
-                                <span className="text-text-secondary">Agent Status:</span>
-                                <span className={`flex items-center gap-2 font-semibold ${isProcessing ? 'text-accent-warning' : 'text-accent-success'
-                                    }`}>
-                                    <span className={`w-2 h-2 rounded-full ${isProcessing ? 'bg-accent-warning animate-pulse' : 'bg-accent-success'
-                                        }`}></span>
-                                    {isProcessing ? 'Processing...' : 'Ready'}
-                                </span>
+                    {/* Main Grid */}
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                        {/* Order Selection */}
+                        <Card>
+                            <CardHeader>
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
+                                        <Package className="w-5 h-5 text-blue-600" />
+                                    </div>
+                                    <span className="text-lg font-bold text-slate-900 tracking-tight">Select Target Order</span>
+                                </div>
+                            </CardHeader>
+                            <CardBody className="space-y-3">
+                                {orders.map((order) => (
+                                    <button
+                                        key={order.id}
+                                        onClick={() => setSelectedOrderId(order.id)}
+                                        className={`w-full text-left p-4 rounded-xl border transition-all ${selectedOrderId === order.id
+                                            ? 'border-blue-600 bg-blue-50/50 shadow-sm'
+                                            : 'border-slate-100 hover:border-slate-300 bg-white'
+                                            }`}
+                                    >
+                                        <div className="font-bold text-slate-900 mb-1">
+                                            Order #{order.id.toString().padStart(4, '0')}
+                                        </div>
+                                        <div className="text-sm font-medium text-slate-600">
+                                            {order.product_name}
+                                        </div>
+                                        <div className="text-xs text-slate-400 mt-2 flex items-center gap-1 font-semibold uppercase tracking-wider">
+                                            Quantity: {order.quantity.toLocaleString()} units
+                                        </div>
+                                    </button>
+                                ))}
+                            </CardBody>
+                        </Card>
+
+                        <div className="lg:col-span-2">
+                            <CrisisControlPanel />
+                        </div>
+
+                        {/* Global Risk Radar Dashboard */}
+                        <Card className="lg:col-span-1 h-[600px] flex flex-col">
+                            <CardBody className="p-0 flex-1 overflow-hidden relative">
+                                <GlobalRiskRadar radarData={radarData} />
+                            </CardBody>
+                        </Card>
+
+                        {/* Global Supply Chain Map */}
+                        <Card className="lg:col-span-2 h-[600px] flex flex-col">
+                            <CardBody className="p-0 flex-1 overflow-hidden relative bg-slate-900 rounded-b-2xl">
+                                <SupplyChainGlobe shipments={shipments} disruptions={disruptions} radarData={radarData} storms={storms} />
+                            </CardBody>
+                        </Card>
+                    </div>
+
+                    {/* Status Panel */}
+                    <Card className="mb-24">
+                        <CardBody>
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-4">
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Simulation Status:</span>
+                                        <span className={`flex items-center gap-2 font-bold text-sm ${isProcessing ? 'text-amber-600 bg-amber-50 px-3 py-1 rounded-full' : 'text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full'
+                                            }`}>
+                                            <span className={`w-2 h-2 rounded-full ${isProcessing ? 'bg-amber-600 animate-pulse' : 'bg-emerald-600'
+                                                }`}></span>
+                                            {isProcessing ? 'Agent Computing...' : 'Standing By'}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center gap-4">
+                                    <select
+                                        onChange={handleSpeedChange}
+                                        className="bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-xl focus:ring-blue-500 focus:border-blue-500 block p-2.5 font-medium outline-none"
+                                        defaultValue="1"
+                                    >
+                                        <option value="1">1x Speed</option>
+                                        <option value="5">5x Speed</option>
+                                        <option value="10">10x Speed</option>
+                                    </select>
+
+                                    <button
+                                        onClick={resetSimulation}
+                                        className="bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 font-bold text-sm px-4 py-2.5 rounded-xl transition-colors shadow-sm flex items-center gap-2"
+                                    >
+                                        <RotateCcw className="w-4 h-4 text-slate-500" />
+                                        Reset Flow
+                                    </button>
+                                </div>
                             </div>
-                            <div className="text-sm text-text-muted">
-                                Terminal: {isTerminalOpen ? 'Open' : 'Closed'}
-                            </div>
-                        </div>
-
-                        <button
-                            onClick={resetSimulation}
-                            className="btn-secondary flex items-center gap-2"
-                        >
-                            <RotateCcw className="w-4 h-4" />
-                            Reset Simulation
-                        </button>
-                    </div>
+                        </CardBody>
+                    </Card>
                 </div>
-
-                {/* Agent Terminal */}
-                <AgentTerminal
-                    logs={agentLogs}
-                    isOpen={isTerminalOpen}
-                    onToggle={() => setIsTerminalOpen(!isTerminalOpen)}
-                    onClose={() => setIsTerminalOpen(false)}
-                />
-
-                {/* Crisis Modal */}
-                {showCrisisModal && currentCrisis && (
-                    <CrisisModal
-                        disruption={currentCrisis.disruption}
-                        plans={currentCrisis.plans}
-                        onClose={() => setShowCrisisModal(false)}
-                        onAccept={handleAcceptPlan}
-                        onReject={handleRejectPlan}
-                    />
-                )}
-            </div>
-        </div>
+            )}
+        </ControlTowerLayout>
     );
 }
