@@ -1,12 +1,37 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import { WebSocketServer } from 'ws';
+import Redis from 'ioredis';
 import apiRoutes from './api/routes.js';
+import digitalTwinRoutes from './api/digitalTwin.js';
+import riskRoutes from './api/risk.js';
+import recoveryPlanRoutes from './api/recoveryPlan.js';
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+
+// WebSocket Server on Port 8080
+const wss = new WebSocketServer({ port: 8080 });
+console.log("WebSocket server running on 8080");
+
+const subscriber = new Redis();
+subscriber.subscribe("stream:risk.predictions", "stream:shipments", "stream:disruptions", "stream:risk_radar", "stream:shipments:live", "stream:storms");
+subscriber.on("message", (channel, message) => {
+    try {
+        const data = JSON.parse(message);
+        wss.clients.forEach(client => {
+            // ws.OPEN is 1
+            if (client.readyState === 1) {
+                client.send(JSON.stringify({ type: channel, payload: data }));
+            }
+        });
+    } catch (err) {
+        console.error("Error broadcasting risk message:", err);
+    }
+});
 
 // Middleware
 app.use(cors());
@@ -20,6 +45,9 @@ app.use((req, res, next) => {
 
 // API Routes
 app.use('/api', apiRoutes);
+app.use('/api', digitalTwinRoutes);
+app.use('/api', riskRoutes);
+app.use('/api', recoveryPlanRoutes);
 
 // Health check
 app.get('/health', (req, res) => {
@@ -59,6 +87,41 @@ app.listen(PORT, () => {
         .catch(err => {
             console.log('   ⚠️  Pipeline scheduler skipped:', err.message);
         });
+
+    // Start logistics continuous movement simulation
+    import('./simulator/logisticsEngine.js').then(({ startSimulation }) => {
+        startSimulation();
+        console.log('   🚢 Logistics Movement Engine started');
+    }).catch(err => console.error("Failed to load LogisticsEngine:", err));
+
+
+    // Start Phase 6 Predictive Intelligence Pipeline
+    import('./intelligence/featureStore.js').then(({ FeatureStore }) => {
+        FeatureStore.startLoop();
+        console.log('   📊 FeatureStore buffer loop started');
+    }).catch(err => console.error("Failed to load FeatureStore:", err));
+
+    import('./intelligence/riskRadar.js').then(({ default: RiskRadar }) => {
+        RiskRadar.startRadar();
+        console.log('   🌐 Global Risk Radar started');
+    }).catch(err => console.error("Failed to load RiskRadar:", err));
+
+    import('./intelligence/aisStreamTracker.js').then(({ startAISTracker }) => {
+        startAISTracker();
+    }).catch(err => console.error("Failed to load AISTracker:", err));
+
+    import('./intelligence/eventAnalyzer.js').then(({ pollGlobalNews }) => {
+        setInterval(pollGlobalNews, 300000); // Poll every 5 mins
+        pollGlobalNews(); // Trigger immediately
+    }).catch(err => console.error("Failed to load EventAnalyzer:", err));
+
+    import('./intelligence/weatherMonitor.js').then(({ default: weatherMonitor }) => {
+        weatherMonitor.start();
+    }).catch(err => console.error("Failed to load WeatherMonitor:", err));
+
+    import('./intelligence/stormTracker.js').then(({ default: stormTracker }) => {
+        stormTracker.start();
+    }).catch(err => console.error("Failed to load StormTracker:", err));
 
     // Initialize MemoryBus (Redis optional)
     import('./swarm/MemoryBus.js')

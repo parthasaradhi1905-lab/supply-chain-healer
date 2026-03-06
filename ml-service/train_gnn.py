@@ -172,7 +172,7 @@ def train_gnn_model():
     print("=" * 60)
 
     # Load dataset
-    data_dir = os.path.join(os.path.dirname(__file__), "data")
+    data_dir = os.path.join(os.path.dirname(__file__), "datasets")
     graph_csv = os.path.join(data_dir, "supply_chain_graph_dataset.csv")
     base_csv = os.path.join(data_dir, "supply_chain_dataset.csv")
 
@@ -274,7 +274,7 @@ def _train_with_gnn(train_df, test_df, feature_cols, all_features):
     _print_results(y_true, y_pred, "Graph Neural Network (GCN)")
 
     # Save model
-    model_path = os.path.join(os.path.dirname(__file__), "gnn_model.pt")
+    model_path = os.path.join(os.path.dirname(__file__), "models", "gnn", "gnn_model.pt")
     torch.save(model.state_dict(), model_path)
     print(f"\n💾 GNN model saved to: {model_path}")
 
@@ -331,7 +331,7 @@ def _train_with_mlp(train_df, test_df, all_features):
 
     _print_results(y_test, y_pred, "Graph-Aware Deep MLP")
 
-    model_path = os.path.join(os.path.dirname(__file__), "gnn_model.pt")
+    model_path = os.path.join(os.path.dirname(__file__), "models", "gnn", "gnn_model.pt")
     torch.save({"model_state": model.state_dict(), "scaler_mean": scaler.mean_.tolist(),
                 "scaler_scale": scaler.scale_.tolist(), "features": all_features}, model_path)
     print(f"\n💾 MLP model saved to: {model_path}")
@@ -358,7 +358,7 @@ def _train_with_xgboost(train_df, test_df, all_features):
 
     _print_results(y_test, y_pred, "XGBoost Baseline (graph features)")
 
-    model.save_model(os.path.join(os.path.dirname(__file__), "disruption_model.json"))
+    model.save_model(os.path.join(os.path.dirname(__file__), "models", "disruption", "disruption_model.json"))
     print(f"\n💾 XGBoost model saved")
 
     # Feature importance
@@ -396,7 +396,7 @@ def _save_metadata(y_true, y_pred, model_type, features, n_samples):
         "n_features": len(features),
         "has_graph_features": any("graph" in f or "cluster" in f or "n_suppliers" in f for f in features),
     }
-    meta_path = os.path.join(os.path.dirname(__file__), "model_metadata.json")
+    meta_path = os.path.join(os.path.dirname(__file__), "models", "metadata", "model_metadata.json")
     with open(meta_path, "w") as f:
         json.dump(metadata, f, indent=2)
     print(f"📝 Metadata saved to: {meta_path}")

@@ -25,3 +25,10 @@ __pycache__/
 
 # OS
 Thumbs.db
+
+# ML Datasets & Models
+ml-service/models/*.pt
+ml-service/models/*.pth
+ml-service/datasets/*
+ml-service/rl/checkpoints/*
+

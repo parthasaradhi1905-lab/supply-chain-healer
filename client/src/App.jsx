@@ -4,7 +4,7 @@ import { SettingsProvider } from './context/SettingsContext';
 import LoginPage from './pages/LoginPage';
 import BuyerDashboard from './pages/BuyerDashboard';
 import SupplierDashboard from './pages/SupplierDashboard';
-// AdminDashboard removed
+import AdminDashboard from './pages/AdminDashboard';
 import MyOrdersPage from './pages/MyOrdersPage';
 import TrackShipmentsPage from './pages/TrackShipmentsPage';
 import OrderIntakePage from './pages/OrderIntakePage';
@@ -60,13 +60,24 @@ function AppRoutes() {
                         isAuthenticated ? (
                             user?.role === 'supplier' ? (
                                 <Navigate to="/supplier-dashboard" replace />
+                            ) : user?.role === 'admin' ? (
+                                <Navigate to="/admin-dashboard" replace />
                             ) : (
-                                // Default to buyer dashboard for buyers and admins
                                 <Navigate to="/buyer-dashboard" replace />
                             )
                         ) : (
                             <LoginPage />
                         )
+                    }
+                />
+
+                {/* Admin Dashboard */}
+                <Route
+                    path="/admin-dashboard"
+                    element={
+                        <ProtectedRoute allowedRoles={['admin']}>
+                            <AdminDashboard />
+                        </ProtectedRoute>
                     }
                 />
 
